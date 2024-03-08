@@ -10,7 +10,7 @@ source $newenvname/bin/activate
 
 必要なライブラリのインストール
 ```
-python -m pip install requirements.txt
+python3.12 -m pip install -r requirements.txt
 ```
 
 
