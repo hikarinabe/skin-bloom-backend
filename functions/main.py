@@ -9,8 +9,9 @@ from firebase_functions import https_fn, options
 initialize_app()
 options.set_global_options(region=options.SupportedRegion.ASIA_NORTHEAST1)
 
-
-@https_fn.on_request()
+@https_fn.on_request(
+        cors=options.CorsOptions(cors_origins="*", cors_methods=["get"])
+)
 def on_request_example(req: https_fn.Request) -> https_fn.Response:
     return https_fn.Response("Hello world!")
 
