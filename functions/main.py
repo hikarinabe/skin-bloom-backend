@@ -1,11 +1,12 @@
 """ This is main program
     Deploy with `firebase deploy """
 import app.user
-from firebase_admin import initialize_app
+from firebase_admin import credentials, initialize_app
 from firebase_functions import https_fn, options
 
-initialize_app()
 options.set_global_options(region=options.SupportedRegion.ASIA_NORTHEAST1)
+cred = credentials.Certificate('./key.json')
+initialize_app(cred)
 
 @https_fn.on_request(
     cors=options.CorsOptions(cors_origins='*', cors_methods=['get'])
@@ -19,15 +20,11 @@ def hello(_: https_fn.Request) -> https_fn.Response:
 )
 def user(req: https_fn.Request) -> https_fn.Response:
     if req.method == 'GET':
-        user_resp = app.user.get_user(req)
-        return https_fn.Response(status=200, response=user_resp)
+        return app.user.get_user(req)
     if req.method == 'POST':
-        app.user.create_user(req)
-        return https_fn.Response(status=201, response="User created")
+        return app.user.create_user(req)
     if req.method == 'PUT':
-        app.user.update_user(req)
-        return https_fn.Response(status=201, response="User updated")
+        return app.user.update_user(req)
     if req.method == 'DELETE':
-        app.user.delete_user(req)
-        return https_fn.Response(status=200, response="User deleted")
+        return app.user.delete_user(req)
     return https_fn.Response(status=405, response="Not support the request method")
