@@ -1,5 +1,7 @@
 import json
+import random
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from firebase_admin import firestore
 from firebase_functions import https_fn
@@ -34,13 +36,15 @@ class UserType:
             self.sex = request_item
 
     def set_birthday(self, request_item):
-        print(request_item, type(request_item))
         if request_item != None:
-            # datetime sample format: https://docs.python.org/ja/3/library/datetime.html#datetime.datetime.fromisoformat
+            # datetime format: https://docs.python.org/ja/3/library/datetime.html#datetime.datetime.fromisoformat
             birthday =  datetime.fromisoformat(request_item)
             if type(birthday) == datetime:
                 self.birthday =  birthday
 
+_AUTO_ID_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+def generate_auto_ID() -> str:
+    return "".join(random.choice(_AUTO_ID_CHARS) for _ in range(20))
 
 def set_user_information(req: https_fn.Request) -> UserType:
     user = UserType()
@@ -50,6 +54,12 @@ def set_user_information(req: https_fn.Request) -> UserType:
     user.set_sex(req.form.get('sex'))
     user.set_birthday(req.form.get('birthday'))
     return user
+
+def timestamp_to_str(time_item) -> str:
+    timestamp_str = datetime.fromtimestamp(time_item.timestamp(), ZoneInfo("Asia/Tokyo"))
+    return timestamp_str.strftime('%Y-%m-%d-%H:%M:%S.%f')
+
+
 
 
 """ 
@@ -62,21 +72,31 @@ def get_user(req: https_fn.Request):
     doc = db.collection(u'user').document(user_id).get()    
     if doc.exists == False:
         return https_fn.Response(status=404, response="user not found")
+    
+    user_dict = doc.to_dict()
 
-    return https_fn.Response(status=200, response=json.dumps(doc.to_dict()), content_type='application/json')
+    # json.dumpでエラーが出るので、timestampをstringに直す
+    user_dict['birthday'] = timestamp_to_str(user_dict['birthday'])
+    user_dict['create_time'] = timestamp_to_str(user_dict['create_time'])
+    user_dict['update_time'] = timestamp_to_str(user_dict['update_time'])    
+
+    return https_fn.Response(status=200, response=json.dumps(user_dict), content_type='application/json')
 
 def create_user(req: https_fn.Request):
     db = firestore.client()
     user = set_user_information(req)
-    result = db.collection('user').document().set({
+    user_id = generate_auto_ID()
+    result = db.collection('user').document(user_id).set({
         'first_name': user.first_name, 
         'last_name': user.last_name,
         'nick_name': user.nick_name,
         'sex': user.sex, 
         'birthday': user.birthday,
+        'create_time': datetime.now(),
+        'update_time': datetime.now()
     })
     if result:
-        return https_fn.Response(status=201, response="User created")
+        return https_fn.Response(status=201, response=user_id)
     
     return https_fn.Response(status=500, response="Failed to create user")
 
@@ -110,6 +130,7 @@ def update_user(req: https_fn.Request):
         'nick_name': user.nick_name,
         'sex': user.sex, 
         'birthday': user.birthday,
+        'update_time': datetime.now()
     })
     
     return https_fn.Response(status=201, response="User updated")
