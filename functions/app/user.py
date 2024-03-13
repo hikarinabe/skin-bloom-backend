@@ -19,7 +19,13 @@ def create_user(req: https_fn.Request):
     print("create_user")
 
 def delete_user(req: https_fn.Request):
-    print("GEdelete_userT")
+    user_id = req.args.to_dict().get('user_id')
 
+    db = firestore.client()
+    doc = db.collection(u'user').document(user_id).delete()
+    if doc.exists == False:
+        return https_fn.Response(status=404, response="user not found")
+    return https_fn.Response(status=200, response="User deleted")
+    
 def update_user(req: https_fn.Request):
     return https_fn.Response(status=201, response="User updated")
