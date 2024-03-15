@@ -28,3 +28,8 @@ def user(req: https_fn.Request) -> https_fn.Response:
     if req.method == 'DELETE':
         return app.user.delete_user(req)
     return https_fn.Response(status=405, response="Not support the request method")
+
+# @https_fn.on_request(
+#     cors=options.CorsOptions(cors_origins='*', cors_methods=['get', 'post', 'put', 'delete'])
+# )
+# def user(req: https_fn.Request) -> https_fn.Response:

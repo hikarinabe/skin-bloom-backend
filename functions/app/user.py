@@ -1,5 +1,4 @@
 import json
-import random
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -9,27 +8,17 @@ from firebase_functions import https_fn
 
 class UserType:
     def __init__(self):
-        self.first_name = ""
-        self.last_name = ""
-        self.nick_name = ""
+        self.account_name = ""
         self.sex = "回答なし"
         self.birthday = datetime(1900, 1, 1)
         
 
     def __str__(self):
-        return f"first_name: {self.first_name}, last_name: {self.last_name}, data:{self.nick_name}, sex:{self.sex}, birthday:{self.birthday}"
-    
-    def set_first_name(self, request_item):
-        if request_item != None:
-            self.first_name = request_item
-    
-    def set_last_name(self, request_item):
-        if request_item != None:
-            self.last_name = request_item
+        return f"account_name:{self.account_name}, sex:{self.sex}, birthday:{self.birthday}"
 
-    def set_nick_name(self, request_item):
+    def set_account_name(self, request_item):
         if request_item != None:
-            self.nick_name = request_item
+            self.account_name = request_item
 
     def set_sex(self, request_item):
         if request_item != None:
@@ -42,15 +31,9 @@ class UserType:
             if type(birthday) == datetime:
                 self.birthday =  birthday
 
-_AUTO_ID_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-def generate_auto_ID() -> str:
-    return "".join(random.choice(_AUTO_ID_CHARS) for _ in range(20))
-
 def set_user_information(req: https_fn.Request) -> UserType:
     user = UserType()
-    user.set_first_name(req.form.get('first_name'))
-    user.set_last_name(req.form.get('last_name'))
-    user.set_nick_name(req.form.get('nick_name'))
+    user.set_account_name(req.form.get('account_name'))
     user.set_sex(req.form.get('sex'))
     user.set_birthday(req.form.get('birthday'))
     return user
@@ -85,11 +68,9 @@ def get_user(req: https_fn.Request):
 def create_user(req: https_fn.Request):
     db = firestore.client()
     user = set_user_information(req)
-    user_id = generate_auto_ID()
+    user_id = req.args.to_dict().get('user_id')
     result = db.collection('user').document(user_id).set({
-        'first_name': user.first_name, 
-        'last_name': user.last_name,
-        'nick_name': user.nick_name,
+        'account_name': user.account_name,
         'sex': user.sex, 
         'birthday': user.birthday,
         'create_time': datetime.now(),
@@ -110,7 +91,8 @@ def delete_user(req: https_fn.Request):
         return https_fn.Response(status=404, response="user not found")
 
     # ユーザーの削除
-    doc = db.collection(u'user').document(user_id).delete()
+    db.collection(u'user').document(user_id).delete()
+    db.collection(u'auth').document(user_id).delete()
     return https_fn.Response(status=200, response="User deleted")
     
 def update_user(req: https_fn.Request):
@@ -125,9 +107,7 @@ def update_user(req: https_fn.Request):
     # 情報を更新
     user = set_user_information(req)
     doc_ref.update({
-        'first_name': user.first_name, 
-        'last_name': user.last_name,
-        'nick_name': user.nick_name,
+        'account_name': user.account_name,
         'sex': user.sex, 
         'birthday': user.birthday,
         'update_time': datetime.now()
