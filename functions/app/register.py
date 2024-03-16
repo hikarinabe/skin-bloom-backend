@@ -68,7 +68,7 @@ def update_user(req: https_fn.Request):
         'update_time': datetime.now()
     })
     
-    return https_fn.Response(status=201, response="User updated")
+    return https_fn.Response(status=200, response="User updated")
 
 def check(req: https_fn.Request):
     # get user id

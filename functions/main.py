@@ -57,4 +57,6 @@ def auth(req: https_fn.Request) -> https_fn.Response:
 def login(req: https_fn.Request) -> https_fn.Response:
     if check_api_key(req) == False:
         return https_fn.Response(status=401, response="Invalid API key")
-    return app.register.check(req)
+    if req.method == 'POST':
+        app.register.check(req)
+    return https_fn.Response(status=405, response="Not support the request method")
