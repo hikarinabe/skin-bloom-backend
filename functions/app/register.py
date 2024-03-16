@@ -27,7 +27,7 @@ def register_user(req: https_fn.Request):
     email = req.form.get('email')
 
     # hash password    
-    password = hashlib.sha256(req.form.get('password')).hexdigest()
+    password = hashlib.sha256(req.form.get('password').encode()).hexdigest()
 
     db = firestore.client()
     result = db.collection('auth').document(user_id).set({
@@ -41,42 +41,26 @@ def register_user(req: https_fn.Request):
 
     return https_fn.Response(status=500, response="Failed to register user")
 
-
-def check(req: https_fn.Request):
-    # get user id
-    user_id = req.form.get('user_id')
-
-    # get auth information
-    db = firestore.client()
-    auth_dict = db.collection('auth').document(user_id).get().to_dict()
-
-    login_response = LoginResponse()
-
-    # email
-    if req.form.get('email') != auth_dict['email']:
-        return https_fn.Response(status=200, response=json.dumps(login_response))
-    
-    # hash password    
-    password = hashlib.sha256(req.form.get('password')).hexdigest()
-    if password != auth_dict['password']:
-        return https_fn.Response(status=200, response=json.dumps(login_response))
-
-    return https_fn.Response(status=200, response=json.dumps(login_response.set_success()))
-
 def update_user(req: https_fn.Request):
     # get user id
-    user_id = req.form.get('user_id')
+    user_id = req.args.to_dict().get('user_id')
 
     db = firestore.client()
     doc_ref = db.collection(u'auth').document(user_id)
-    if doc_ref.get().exists == False:
+    user_info = doc_ref.get()
+    if user_info.exists == False:
         return https_fn.Response(status=404, response="user not found")
     
     # email
     email = req.form.get('email')
+    if email == None:
+        email = user_info.to_dict()['email']
 
-    # hash password    
-    password = hashlib.sha256(req.form.get('password')).hexdigest()
+    # hash password
+    if req.form.get('password') != None:
+        password = hashlib.sha256(req.form.get('password').encode()).hexdigest()
+    else:
+        password = user_info.to_dict()['password']
 
     doc_ref.update({
         'email': email, 
@@ -85,3 +69,28 @@ def update_user(req: https_fn.Request):
     })
     
     return https_fn.Response(status=201, response="User updated")
+
+def check(req: https_fn.Request):
+    # get user id
+    user_id = req.args.to_dict().get('user_id')
+
+    # get auth information
+    db = firestore.client()
+    auth_doc = db.collection('auth').document(user_id).get()
+    if auth_doc.exists == False:
+        return https_fn.Response(status=404, response="user not found")
+    auth_dict = auth_doc.to_dict()
+
+    login_response = LoginResponse()
+
+    # email
+    if req.form.get('email') != auth_dict['email']:
+        return https_fn.Response(status=200, response=json.dumps(login_response.__dict__), content_type='application/json')
+    
+    # hash password    
+    password = hashlib.sha256(req.form.get('password').encode()).hexdigest()
+    if password != auth_dict['password']:
+        return https_fn.Response(status=200, response=json.dumps(login_response.__dict__), content_type='application/json')
+
+    login_response.set_success()
+    return https_fn.Response(status=200, response=json.dumps(login_response.__dict__), content_type='application/json')

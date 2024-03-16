@@ -41,7 +41,7 @@ def auth(req: https_fn.Request) -> https_fn.Response:
     return https_fn.Response(status=405, response="Not support the request method")
 
 @https_fn.on_request(
-    cors=options.CorsOptions(cors_origins='*', cors_methods=['post', 'put'])
+    cors=options.CorsOptions(cors_origins='*', cors_methods=['post'])
 )
 def login(req: https_fn.Request) -> https_fn.Response:
     return app.register.check(req)
