@@ -65,6 +65,12 @@ def get_user(req: https_fn.Request):
 def create_user(req: https_fn.Request):
     db = firestore.client()
     user_id = req.args.to_dict().get('user_id')
+    # ユーザーが存在するか確認
+    db = firestore.client()
+    doc = db.collection(u'auth').document(user_id).get()    
+    if doc.exists == False:
+        return https_fn.Response(status=404, response="user not found")
+
     result = db.collection('user').document(user_id).set({
         'account_name': req.form.get('account_name'),
         'sex': req.form.get('sex'), 
