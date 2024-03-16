@@ -31,13 +31,17 @@ def user(req: https_fn.Request) -> https_fn.Response:
     return https_fn.Response(status=405, response="Not support the request method")
 
 @https_fn.on_request(
-    cors=options.CorsOptions(cors_origins='*', cors_methods=['get', 'post', 'put'])
+    cors=options.CorsOptions(cors_origins='*', cors_methods=['post', 'put'])
 )
 def auth(req: https_fn.Request) -> https_fn.Response:
-    if req.method == 'GET':
-        return app.register.check()
     if req.method == 'POST':
         return app.register.register_user(req)
     if req.method == 'PUT':
         return app.register.update_user(req)
     return https_fn.Response(status=405, response="Not support the request method")
+
+@https_fn.on_request(
+    cors=options.CorsOptions(cors_origins='*', cors_methods=['post', 'put'])
+)
+def login(req: https_fn.Request) -> https_fn.Response:
+    return app.register.check(req)

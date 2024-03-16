@@ -12,7 +12,6 @@ class UserType:
         self.sex = "回答なし"
         self.birthday = datetime(1900, 1, 1)
         
-
     def __str__(self):
         return f"account_name:{self.account_name}, sex:{self.sex}, birthday:{self.birthday}"
 
