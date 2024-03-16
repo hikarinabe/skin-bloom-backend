@@ -1,5 +1,4 @@
 import json
-import random
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -9,27 +8,16 @@ from firebase_functions import https_fn
 
 class UserType:
     def __init__(self):
-        self.first_name = ""
-        self.last_name = ""
-        self.nick_name = ""
+        self.account_name = ""
         self.sex = "回答なし"
         self.birthday = datetime(1900, 1, 1)
         
-
     def __str__(self):
-        return f"first_name: {self.first_name}, last_name: {self.last_name}, data:{self.nick_name}, sex:{self.sex}, birthday:{self.birthday}"
-    
-    def set_first_name(self, request_item):
-        if request_item != None:
-            self.first_name = request_item
-    
-    def set_last_name(self, request_item):
-        if request_item != None:
-            self.last_name = request_item
+        return f"account_name:{self.account_name}, sex:{self.sex}, birthday:{self.birthday}"
 
-    def set_nick_name(self, request_item):
+    def set_account_name(self, request_item):
         if request_item != None:
-            self.nick_name = request_item
+            self.account_name = request_item
 
     def set_sex(self, request_item):
         if request_item != None:
@@ -41,23 +29,20 @@ class UserType:
             birthday =  datetime.fromisoformat(request_item)
             if type(birthday) == datetime:
                 self.birthday =  birthday
+    
+    def set_str_birthday(self, time_item):
+        if type(time_item) == datetime:
+            timestamp_str = datetime.fromtimestamp(time_item.timestamp(), ZoneInfo("Asia/Tokyo"))
+            self.birthday = timestamp_str.strftime('%Y-%m-%d-%H:%M:%S.%f')
+        else:
+            self.birthday = time_item
 
-_AUTO_ID_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-def generate_auto_ID() -> str:
-    return "".join(random.choice(_AUTO_ID_CHARS) for _ in range(20))
-
-def set_user_information(req: https_fn.Request) -> UserType:
-    user = UserType()
-    user.set_first_name(req.form.get('first_name'))
-    user.set_last_name(req.form.get('last_name'))
-    user.set_nick_name(req.form.get('nick_name'))
-    user.set_sex(req.form.get('sex'))
-    user.set_birthday(req.form.get('birthday'))
-    return user
-
-def timestamp_to_str(time_item) -> str:
-    timestamp_str = datetime.fromtimestamp(time_item.timestamp(), ZoneInfo("Asia/Tokyo"))
-    return timestamp_str.strftime('%Y-%m-%d-%H:%M:%S.%f')
+    def convert_response_to_user_type(user_dict):
+        user = UserType()
+        user.set_account_name(user_dict['account_name'])
+        user.set_sex(user_dict['sex'])
+        user.set_str_birthday(user_dict['birthday'])
+        return user
 
 
 
@@ -73,25 +58,23 @@ def get_user(req: https_fn.Request):
     if doc.exists == False:
         return https_fn.Response(status=404, response="user not found")
     
-    user_dict = doc.to_dict()
-
-    # json.dumpでエラーが出るので、timestampをstringに直す
-    user_dict['birthday'] = timestamp_to_str(user_dict['birthday'])
-    user_dict['create_time'] = timestamp_to_str(user_dict['create_time'])
-    user_dict['update_time'] = timestamp_to_str(user_dict['update_time'])    
-
-    return https_fn.Response(status=200, response=json.dumps(user_dict), content_type='application/json')
+    user = UserType.convert_response_to_user_type(doc.to_dict())  
+    
+    return https_fn.Response(status=200, response=json.dumps(user.__dict__), content_type='application/json')
 
 def create_user(req: https_fn.Request):
     db = firestore.client()
-    user = set_user_information(req)
-    user_id = generate_auto_ID()
+    user_id = req.args.to_dict().get('user_id')
+    # ユーザーが存在するか確認
+    db = firestore.client()
+    doc = db.collection(u'auth').document(user_id).get()    
+    if doc.exists == False:
+        return https_fn.Response(status=404, response="user not found")
+
     result = db.collection('user').document(user_id).set({
-        'first_name': user.first_name, 
-        'last_name': user.last_name,
-        'nick_name': user.nick_name,
-        'sex': user.sex, 
-        'birthday': user.birthday,
+        'account_name': req.form.get('account_name'),
+        'sex': req.form.get('sex'), 
+        'birthday': req.form.get('birthday'),
         'create_time': datetime.now(),
         'update_time': datetime.now()
     })
@@ -105,32 +88,41 @@ def delete_user(req: https_fn.Request):
 
     # ユーザーが存在するか確認
     db = firestore.client()
-    doc = db.collection(u'user').document(user_id).get()    
+    doc = db.collection(u'auth').document(user_id).get()    
     if doc.exists == False:
         return https_fn.Response(status=404, response="user not found")
 
     # ユーザーの削除
-    doc = db.collection(u'user').document(user_id).delete()
+    db.collection(u'auth').document(user_id).delete()
+    db.collection(u'user').document(user_id).delete()
     return https_fn.Response(status=200, response="User deleted")
+    
+def validate_item(item, req, db_info):
+    req_item = req.form.get(item)
+    if req_item == None:
+        return db_info.to_dict()[item]
+    return req_item
     
 def update_user(req: https_fn.Request):
     user_id = req.args.to_dict().get('user_id')
 
     # ユーザーの存在確認
     db = firestore.client()
-    doc_ref = db.collection(u'user').document(user_id)
-    if doc_ref.get().exists == False:
+    user_ref = db.collection(u'user').document(user_id)
+    user_info = user_ref.get()
+    if user_info.exists == False:
         return https_fn.Response(status=404, response="user not found")
     
     # 情報を更新
-    user = set_user_information(req)
-    doc_ref.update({
-        'first_name': user.first_name, 
-        'last_name': user.last_name,
-        'nick_name': user.nick_name,
-        'sex': user.sex, 
-        'birthday': user.birthday,
+    account_name = validate_item('account_name', req, user_info)
+    sex = validate_item('sex', req, user_info)
+    birthday = validate_item('birthday', req, user_info)
+
+    user_ref.update({
+        'account_name': account_name,
+        'sex': sex, 
+        'birthday': birthday,
         'update_time': datetime.now()
     })
     
-    return https_fn.Response(status=201, response="User updated")
+    return https_fn.Response(status=200, response="User updated")

@@ -8,4 +8,5 @@
 
 - [ ] ローカルでの動作確認
 - [ ] CIが全てパスしているかどうか
-- [ ] PR merge後にfirebase deployをmainブランチで行ってください
+- [ ] endpoint_list.mdに追加したエンドポイントの詳細を書いているか
+- [ ] PR merge後にfirebase deployをmainブランチで行うこと
