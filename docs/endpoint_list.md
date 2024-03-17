@@ -10,7 +10,7 @@
 ## Login
 | Explanation | Path | Method | Request | Response | Request_sample |
 | ---- | ---- | ---- | ---- | ---- | ---- |
-|ログイン| /login?user_id=<user_id> | GET | None | result: bool | curl --location --request GET 'http://127.0.0.1:5001/hikarinabe-741d2/asia-northeast1/login?user_id=YHMi6IE5Bnu8gcItzbld' <br> --header 'Authorization: API_KEY' <br> --form 'email="example@email.com"' <br> --form 'password="123456"' |
+|ログイン| /login?user_id=<user_id> | POST | user_id: string | result: bool | curl --location --request GET 'http://127.0.0.1:5001/hikarinabe-741d2/asia-northeast1/login' <br> --header 'Authorization: API_KEY' <br> --form 'email="example@email.com"' <br> --form 'password="123456"' |
 
 ## User
 | Explanation | Path | Method | Request | Response | Request_sample |
