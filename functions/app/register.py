@@ -8,11 +8,8 @@ from firebase_functions import https_fn
 
 
 class LoginResponse:
-    def __init__(self):
-        self.result = False
-
-    def set_success(self):
-        self.result = True
+    def __init__(self, user_id):
+        self.user_id = user_id
 
 
 _AUTO_ID_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
@@ -71,26 +68,20 @@ def update_user(req: https_fn.Request):
     return https_fn.Response(status=200, response="User updated")
 
 def check(req: https_fn.Request):
-    # get user id
-    user_id = req.args.to_dict().get('user_id')
+    email = req.form.get('email')
 
     # get auth information
     db = firestore.client()
-    auth_doc = db.collection('auth').document(user_id).get()
-    if auth_doc.exists == False:
-        return https_fn.Response(status=404, response="user not found")
-    auth_dict = auth_doc.to_dict()
-
-    login_response = LoginResponse()
-
-    # email
-    if req.form.get('email') != auth_dict['email']:
-        return https_fn.Response(status=200, response=json.dumps(login_response.__dict__), content_type='application/json')
+    auth_doc = db.collection('auth').where("email", "==", email).get()
+    print(auth_doc)
     
-    # hash password    
-    password = hashlib.sha256(req.form.get('password').encode()).hexdigest()
-    if password != auth_dict['password']:
-        return https_fn.Response(status=200, response=json.dumps(login_response.__dict__), content_type='application/json')
+    for d in auth_doc:
+        auth_dict = d.to_dict()
+        print(auth_dict)
+        password = hashlib.sha256(req.form.get('password').encode()).hexdigest()
 
-    login_response.set_success()
-    return https_fn.Response(status=200, response=json.dumps(login_response.__dict__), content_type='application/json')
+        if email == auth_dict['email'] and password == auth_dict['password']:
+            return https_fn.Response(status=200, response=json.dumps(LoginResponse(d.id).__dict__), content_type='application/json')
+            
+    return https_fn.Response(status=403, response='Fail to login')
+
