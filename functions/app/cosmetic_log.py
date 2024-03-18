@@ -33,4 +33,16 @@ def update_cosmetic_log(req: https_fn.Request):
     format_response(200, "unimplemented")
 
 def delete_cosmetic_log(req: https_fn.Request):
-    format_response(200, "unimplemented")
+    user_id = req.args.to_dict().get('user_id')
+    cosmetic_log_id = req.args.to_dict().get('cosmetic_log_id')
+
+    # ユーザーが存在するか確認
+    db = firestore.client()
+    user_ref = db.collection(u'user').document(user_id)
+    if user_ref.get().exists == False:
+        return format_response(status=404, response="user not found")
+    
+    # ログの削除
+    user_ref.collection(u'cosmetic_logs').document(cosmetic_log_id).delete()
+
+    return format_response(status=200, response="CosmeticLog is deleted")
