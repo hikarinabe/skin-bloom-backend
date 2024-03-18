@@ -4,47 +4,31 @@ from zoneinfo import ZoneInfo
 
 from firebase_admin import firestore
 from firebase_functions import https_fn
+from google.api_core.datetime_helpers import DatetimeWithNanoseconds
 
+DEFAULT_BIRTHDAY = datetime(1900, 1, 1, 0, 0, 0)
 
-class UserType:
-    def __init__(self):
-        self.account_name = ""
-        self.sex = "回答なし"
-        self.birthday = datetime(1900, 1, 1)
-        
-    def __str__(self):
-        return f"account_name:{self.account_name}, sex:{self.sex}, birthday:{self.birthday}"
-
-    def set_account_name(self, request_item):
-        if request_item != None:
-            self.account_name = request_item
-
-    def set_sex(self, request_item):
-        if request_item != None:
-            self.sex = request_item
-
-    def set_birthday(self, request_item):
-        if request_item != None:
-            # datetime format: https://docs.python.org/ja/3/library/datetime.html#datetime.datetime.fromisoformat
-            birthday =  datetime.fromisoformat(request_item)
-            if type(birthday) == datetime:
-                self.birthday =  birthday
-    
-    def set_str_birthday(self, time_item):
-        if type(time_item) == datetime:
+def set_str_birthday(time_item: DatetimeWithNanoseconds):
+        date_time = datetime(time_item.year, time_item.month, time_item.day,
+              time_item.hour, time_item.minute, time_item.second,
+              time_item.nanosecond // 1000)
+        if type(date_time) == datetime:
             timestamp_str = datetime.fromtimestamp(time_item.timestamp(), ZoneInfo("Asia/Tokyo"))
-            self.birthday = timestamp_str.strftime('%Y-%m-%d-%H:%M:%S.%f')
-        else:
-            self.birthday = time_item
+            return timestamp_str.strftime('%Y-%m-%d-%H:%M:%S')
+        return time_item
 
-    def convert_response_to_user_type(user_dict):
-        user = UserType()
-        user.set_account_name(user_dict['account_name'])
-        user.set_sex(user_dict['sex'])
-        user.set_str_birthday(user_dict['birthday'])
-        return user
+def set_timestamp_birthday(str_time):
+    birthday = DEFAULT_BIRTHDAY
+    if str_time != None:
+        try:
+            # 1900-1-1 0:0:0
+            birthday = datetime.strptime(str_time, "%Y-%m-%d %H:%M:%S")
+        except:
+            birthday = DEFAULT_BIRTHDAY
+    return birthday
 
-
+def format_response(status, response: str):
+    return https_fn.Response(status=status, response=json.dumps({'message': response}), content_type='application/json')
 
 
 """ 
@@ -56,32 +40,47 @@ def get_user(req: https_fn.Request):
     db = firestore.client()
     doc = db.collection(u'user').document(user_id).get()    
     if doc.exists == False:
-        return https_fn.Response(status=404, response="user not found")
+        return format_response(status=404, response="user not found")
     
-    user = UserType.convert_response_to_user_type(doc.to_dict())  
+    auth_doc = db.collection(u'auth').document(user_id).get()    
+    if doc.exists == False:
+        return format_response(status=404, response="user not found")
     
-    return https_fn.Response(status=200, response=json.dumps(user.__dict__), content_type='application/json')
+    user_dict = doc.to_dict()
+    resp = {
+        "account_name": user_dict['account_name'],
+        "sex": user_dict['sex'],
+        "birthday": set_str_birthday(user_dict['birthday']),
+        "email": auth_doc.to_dict()["email"]
+    } 
+    
+    return https_fn.Response(status=200, response=json.dumps(resp), content_type='application/json')
 
 def create_user(req: https_fn.Request):
-    db = firestore.client()
-    user_id = req.args.to_dict().get('user_id')
+    data = json.loads(req.data.decode("utf-8"))
+    user_id = data['user_id']
     # ユーザーが存在するか確認
     db = firestore.client()
     doc = db.collection(u'auth').document(user_id).get()    
     if doc.exists == False:
-        return https_fn.Response(status=404, response="user not found")
+        return format_response(status=404, response="user not found")
+    
+    # account name の validation
+    if ('account_name' in data) == False:
+        return format_response(status=400, response="please specify account_name")
 
     result = db.collection('user').document(user_id).set({
-        'account_name': req.form.get('account_name'),
-        'sex': req.form.get('sex'), 
-        'birthday': req.form.get('birthday'),
+        'account_name': data['account_name'],
+        'sex': data['sex']  if 'sex' in data else 'N/A', 
+        'birthday': set_timestamp_birthday(data['birthday']), 
+        'nayami': data['nayami'] if 'nayami' in data else [], 
         'create_time': datetime.now(),
         'update_time': datetime.now()
     })
     if result:
-        return https_fn.Response(status=201, response=user_id)
+        return format_response(status=201, response='Success to create user')
     
-    return https_fn.Response(status=500, response="Failed to create user")
+    return format_response(status=500, response="Failed to create user")
 
 def delete_user(req: https_fn.Request):
     user_id = req.args.to_dict().get('user_id')
@@ -90,39 +89,49 @@ def delete_user(req: https_fn.Request):
     db = firestore.client()
     doc = db.collection(u'auth').document(user_id).get()    
     if doc.exists == False:
-        return https_fn.Response(status=404, response="user not found")
+        return format_response(status=404, response="user not found")
 
     # ユーザーの削除
     db.collection(u'auth').document(user_id).delete()
     db.collection(u'user').document(user_id).delete()
-    return https_fn.Response(status=200, response="User deleted")
+    return format_response(status=200, response="User deleted")
     
-def validate_item(item, req, db_info):
-    req_item = req.form.get(item)
-    if req_item == None:
+def validate_item(item, data, db_info):
+    if (item in data) == False:
         return db_info.to_dict()[item]
-    return req_item
+    return data[item]
     
 def update_user(req: https_fn.Request):
-    user_id = req.args.to_dict().get('user_id')
+    data = json.loads(req.data.decode("utf-8"))
+    user_id = data['user_id']
 
     # ユーザーの存在確認
     db = firestore.client()
     user_ref = db.collection(u'user').document(user_id)
     user_info = user_ref.get()
     if user_info.exists == False:
-        return https_fn.Response(status=404, response="user not found")
+        return format_response(status=404, response="user not found")
+    
+    # email用
+    auth_ref = db.collection(u'auth').document(user_id)
+    auth_info = auth_ref.get()
+    if auth_info.exists == False:
+        return format_response(status=404, response="user not found")
     
     # 情報を更新
-    account_name = validate_item('account_name', req, user_info)
-    sex = validate_item('sex', req, user_info)
-    birthday = validate_item('birthday', req, user_info)
-
+    account_name = validate_item('account_name', data, user_info)
+    sex = validate_item('sex', data, user_info)
+    birthday = validate_item('birthday', data, user_info)
     user_ref.update({
         'account_name': account_name,
         'sex': sex, 
         'birthday': birthday,
         'update_time': datetime.now()
     })
+
+    email = validate_item('email', data, auth_info)
+    auth_ref.update({
+        "email": email
+    })
     
-    return https_fn.Response(status=200, response="User updated")
+    return format_response(status=200, response="User updated")
