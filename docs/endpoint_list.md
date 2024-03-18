@@ -147,7 +147,7 @@ request:
 ```
 curl --location 'http://127.0.0.1:5001/hikarinabe-741d2/asia-northeast1/cosmetic_log' \
 --header 'Content-Type: application/json' \
---header 'Authorization: wJ5C9dFcEMB5' \
+--header 'Authorization: API_KEY' \
 --data '{
     "user_id": "7XFletCT3QvQqzWWt8sb",
     "cosmetic_id": "YYYY",
@@ -170,7 +170,7 @@ response:
 request:
 ```
 curl --location 'http://127.0.0.1:5001/hikarinabe-741d2/asia-northeast1/cosmetic_log?user_id=7XFletCT3QvQqzWWt8sb&cosmetic_id=YYYY' \
---header 'Authorization: wJ5C9dFcEMB5'
+--header 'Authorization: API_KEY'
 ```
 
 response:
@@ -195,7 +195,7 @@ response:
 request:
 ```
 curl --location 'http://127.0.0.1:5001/hikarinabe-741d2/asia-northeast1/cosmetic_log/list?user_id=7XFletCT3QvQqzWWt8sb' \
---header 'Authorization: wJ5C9dFcEMB5'
+--header 'Authorization: API_KEY'
 ```
 
 response:
@@ -239,7 +239,7 @@ request:
 ```
 curl --location --request PUT 'http://127.0.0.1:5001/hikarinabe-741d2/asia-northeast1/cosmetic_log' \
 --header 'Content-Type: application/json' \
---header 'Authorization: wJ5C9dFcEMB5' \
+--header 'Authorization: API_KEY' \
 --data '{
     "user_id": "7XFletCT3QvQqzWWt8sb",
     "cosmetic_id": "YYYY",
@@ -277,7 +277,7 @@ check update to use GET:
 request:
 ```
 curl --location --request DELETE 'http://127.0.0.1:5001/hikarinabe-741d2/asia-northeast1/cosmetic_log?user_id=7XFletCT3QvQqzWWt8sb&cosmetic_id=YYYY' \
---header 'Authorization: wJ5C9dFcEMB5'
+--header 'Authorization: API_KEY'
 ```
 
 response:
