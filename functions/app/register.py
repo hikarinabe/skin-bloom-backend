@@ -11,6 +11,8 @@ class LoginResponse:
     def __init__(self, user_id):
         self.user_id = user_id
 
+def format_response(status, response: str):
+    return https_fn.Response(status=status, response=json.dumps({'message': response}), content_type='application/json')
 
 _AUTO_ID_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 def generate_auto_ID() -> str:
@@ -34,54 +36,51 @@ def register_user(req: https_fn.Request):
         'update_time': datetime.now()
     })
     if result:
-        return https_fn.Response(status=201, response=user_id)
+        return format_response(status=201, response=user_id)
 
-    return https_fn.Response(status=500, response="Failed to register user")
+    return format_response(status=500, response="Failed to register user")
 
-def update_user(req: https_fn.Request):
+# NOTE: password check is done by client side
+def update_password(req: https_fn.Request):
     # get user id
-    user_id = req.args.to_dict().get('user_id')
+    data = json.loads(req.data.decode("utf-8"))
+    user_id = data['user_id']
 
     db = firestore.client()
     doc_ref = db.collection(u'auth').document(user_id)
     user_info = doc_ref.get()
     if user_info.exists == False:
-        return https_fn.Response(status=404, response="user not found")
-    
-    # email
-    email = req.form.get('email')
-    if email == None:
-        email = user_info.to_dict()['email']
+        return format_response(status=404, response="user not found")
+    current_password = hashlib.sha256(data['current_password'].encode()).hexdigest()
+    if current_password != user_info.to_dict()['password']:
+        return format_response(status=400, response="current password is wrong")
 
-    # hash password
-    if req.form.get('password') != None:
-        password = hashlib.sha256(req.form.get('password').encode()).hexdigest()
+    if data['new_password'] != None:
+        password = hashlib.sha256(data['new_password'].encode()).hexdigest()
     else:
-        password = user_info.to_dict()['password']
+        return format_response(status=400, response="please specify new password")
 
     doc_ref.update({
-        'email': email, 
+        'email': user_info.to_dict()['email'], 
         'password': password,
         'update_time': datetime.now()
     })
     
-    return https_fn.Response(status=200, response="User updated")
+    return format_response(status=200, response="password updated")
 
 def check(req: https_fn.Request):
-    email = req.form.get('email')
+    data = json.loads(req.data.decode("utf-8"))
+    email = data['email']
 
     # get auth information
     db = firestore.client()
     auth_doc = db.collection('auth').where("email", "==", email).get()
-    print(auth_doc)
     
     for d in auth_doc:
         auth_dict = d.to_dict()
-        print(auth_dict)
-        password = hashlib.sha256(req.form.get('password').encode()).hexdigest()
-
+        password = hashlib.sha256(data['password'].encode()).hexdigest()
         if email == auth_dict['email'] and password == auth_dict['password']:
             return https_fn.Response(status=200, response=json.dumps(LoginResponse(d.id).__dict__), content_type='application/json')
             
-    return https_fn.Response(status=403, response='Fail to login')
+    return format_response(status=403, response='Fail to login')
 

@@ -1,21 +1,141 @@
 # Endpoint list
 
 ## Auth
-| Explanation | Path | Method | Request | Response | Request_sample |
-| ---- | ---- | ---- | ---- | ---- | ---- |
-|ユーザーの基本情報の登録| /register | POST | email: string <br> password: string | user_id: string | curl --location 'http://127.0.0.1:5001/hikarinabe-741d2/asia-northeast1/auth' <br> --header 'Authorization: API_KEY'<br>--form 'email="example@email.com"' <br>--form 'password="123456"' |
-|登録ユーザーの基本情報の更新| /register?user_id=<user_id> | PUT | email: string (optional) <br> password: string (optional) | None | curl --location --request PUT 'http://127.0.0.1:5001/hikarinabe-741d2/asia-northeast1/auth?user_id=mN2PWNGjHj5z2ED334Bv' <br> --header 'Authorization: API_KEY' <br>--form 'email="example@email.com"' <br>--form 'password="1234"' |
+
+### ユーザーの基本情報の登録 /register | POST
+
+request:
+```
+curl --location 'http://127.0.0.1:5001/hikarinabe-741d2/asia-northeast1/auth' \
+--header 'Authorization: API_KEY' \
+--form 'email="example@email.com"' \
+--form 'password="123456"'
+```
+
+response:
+```
+aTzO4X1KHIkmcV6PZVne (user_id)
+```
+
+### パスワードの更新 /register | PUT
+request:
+```
+curl --location --request PUT 'http://127.0.0.1:5001/hikarinabe-741d2/asia-northeast1/auth' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: API_KEY' \
+--data '{
+    "user_id": "aTzO4X1KHIkmcV6PZVne",
+    "current_password": "123456",
+    "new_password": "1234"
+}'
+```
+
+response:
+```
+{
+    "message": "password updated"
+}
+```
 
 
 ## Login
-| Explanation | Path | Method | Request | Response | Request_sample |
-| ---- | ---- | ---- | ---- | ---- | ---- |
-|ログイン| /login?user_id=<user_id> | POST | user_id: string | result: bool | curl --location --request GET 'http://127.0.0.1:5001/hikarinabe-741d2/asia-northeast1/login' <br> --header 'Authorization: API_KEY' <br> --form 'email="example@email.com"' <br> --form 'password="123456"' |
+### ログイン /login | POST
+
+request:
+```
+curl --location 'http://127.0.0.1:5001/hikarinabe-741d2/asia-northeast1/login' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: API_KEY' \
+--data-raw '{
+    "email": "example@email.com",
+    "password": "1234"
+}'
+
+```
+
+response:
+```
+{
+    "user_id": "aTzO4X1KHIkmcV6PZVne"
+}
+```
 
 ## User
-| Explanation | Path | Method | Request | Response | Request_sample |
-| ---- | ---- | ---- | ---- | ---- | ---- |
-|ユーザー情報の登録| /user?user_id=<user_id> | POST | account_name: string <br>sex: string <br>birthday: Date  | user_id: string | curl --location 'http://127.0.0.1:5001/hikarinabe-741d2/asia-northeast1/user?user_id=YHMi6IE5Bnu8gcItzbld' <br> --header 'Authorization: API_KEY'<br>--form 'account_name="あやぴ"' <br>--form 'sex="女性"' <br>--form 'birthday="2000-11-01"' |
-|ユーザー情報の閲覧| /user?user_id=<user_id> | GET | None | account_name: string <br>sex: string <br>birthday: string | curl --location 'http://127.0.0.1:5001/hikarinabe-741d2/asia-northeast1/user?user_id=YHMi6IE5Bnu8gcItzbld&hoge=null' <br> --header 'Authorization: API_KEY'|
-|ユーザー情報の更新| /user?user_id=<user_id> | PUT | account_name: string <br>sex: string <br>birthday: Date | None | curl --location --request PUT 'http://127.0.0.1:5001/hikarinabe-741d2/asia-northeast1/user?user_id=YHMi6IE5Bnu8gcItzbld' <br> --header 'Authorization: API_KEY'<br>--form 'account_name="たろう"' <br>--form 'sex="男性"' <br>--form 'birthday="2020-05-20"' |
-|ユーザーの基本情報と情報の削除| /user?user_id=<user_id> | DELETE | None | None | curl --location --request DELETE 'http://127.0.0.1:5001/hikarinabe-741d2/asia-northeast1/user?user_id=YHMi6IE5Bnu8gcItzbld'<br> --header 'Authorization: API_KEY' |
+
+### ユーザー情報の登録 /user | POST 
+
+request:
+```
+curl --location 'http://127.0.0.1:5001/hikarinabe-741d2/asia-northeast1/user' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: API_KEY' \
+--data '{
+    "user_id": "aTzO4X1KHIkmcV6PZVne", 
+    "account_name": "hoge",
+    "sex": "男",
+    "birthday": "1900-01-01 00:00:00",
+    "nayami": [1,2,3]
+}
+'
+```
+
+response:
+```
+{
+    "message": "Success to create user"
+}
+```
+
+### ユーザー情報の閲覧 /user?user_id=<user_id> | GET
+
+request:
+```
+curl --location 'http://127.0.0.1:5001/hikarinabe-741d2/asia-northeast1/user?user_id=6KAop6PwbzUydmYsPBDv' \
+--header 'Authorization: API_KEY'
+```
+
+response:
+```
+{
+    "account_name": "hoge",
+    "sex": "男",
+    "birthday": "1900-01-01-09:00:00",
+    "email": "example@email.com"
+}
+```
+
+### ユーザー情報の更新 /user | PUT
+
+request:
+```
+curl --location --request PUT 'http://127.0.0.1:5001/hikarinabe-741d2/asia-northeast1/user?user_id=6KAop6PwbzUydmYsPBDv' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: API_KEY' \
+--data-raw '{
+    "user_id": "6KAop6PwbzUydmYsPBDv",
+    "sex": "女",
+    "email": "hoge@email.com"
+}'
+```
+
+response:
+```
+{
+    "message": "User updated"
+}
+```
+
+### ユーザーの基本情報と情報の削除 /user?user_id=<user_id> | DELETE 
+
+request:
+```
+curl --location --request DELETE 'http://127.0.0.1:5001/hikarinabe-741d2/asia-northeast1/user?user_id=6KAop6PwbzUydmYsPBDv' \
+--header 'Authorization: API_KEY'
+```
+
+response:
+```
+{
+    "message": "User deleted"
+}
+```

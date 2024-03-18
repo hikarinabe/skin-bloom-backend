@@ -1,5 +1,6 @@
 """ This is main program
     Deploy with `firebase deploy """
+import json
 import os
 
 import app.register
@@ -31,7 +32,7 @@ def user(req: https_fn.Request) -> https_fn.Response:
         return https_fn.Response(status=401, response="Invalid API key")
     if req.method == 'GET':
         return app.user.get_user(req)
-    if req.method == 'POST':
+    if req.method == 'POST':        
         return app.user.create_user(req)
     if req.method == 'PUT':
         return app.user.update_user(req)
@@ -48,7 +49,7 @@ def auth(req: https_fn.Request) -> https_fn.Response:
     if req.method == 'POST':
         return app.register.register_user(req)
     if req.method == 'PUT':
-        return app.register.update_user(req)
+        return app.register.update_password(req)
     return https_fn.Response(status=405, response="Not support the request method")
 
 @https_fn.on_request(
