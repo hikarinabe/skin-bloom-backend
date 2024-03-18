@@ -139,3 +139,150 @@ response:
     "message": "User deleted"
 }
 ```
+
+## CosmeticLog
+### Create
+
+request:
+```
+curl --location 'http://127.0.0.1:5001/hikarinabe-741d2/asia-northeast1/cosmetic_log' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: wJ5C9dFcEMB5' \
+--data '{
+    "user_id": "7XFletCT3QvQqzWWt8sb",
+    "cosmetic_id": "YYYY",
+    "rate": 3.4,
+    "category": 2,
+    "good_tag": [2, 4],
+    "bad_tag": [1, 3], 
+    "comment": "test"
+}'
+```
+
+response:
+```
+{
+    "message": "Success to create log"
+}
+```
+
+### Get
+request:
+```
+curl --location 'http://127.0.0.1:5001/hikarinabe-741d2/asia-northeast1/cosmetic_log?user_id=7XFletCT3QvQqzWWt8sb&cosmetic_id=YYYY' \
+--header 'Authorization: wJ5C9dFcEMB5'
+```
+
+response:
+```
+{
+    "id": "YYYY",
+    "rate": 3.4,
+    "category": 2,
+    "good_tag": [
+        2,
+        4
+    ],
+    "bad_tag": [
+        1,
+        3
+    ],
+    "comment": "test"
+}
+```
+
+### List
+request:
+```
+curl --location 'http://127.0.0.1:5001/hikarinabe-741d2/asia-northeast1/cosmetic_log/list?user_id=7XFletCT3QvQqzWWt8sb' \
+--header 'Authorization: wJ5C9dFcEMB5'
+```
+
+response:
+```
+{
+    "list_cosmetics": [
+        {
+            "id": "XXXX",
+            "rate": 4.0,
+            "category": 2,
+            "good_tag": [
+                2,
+                4
+            ],
+            "bad_tag": [
+                1,
+                3
+            ],
+            "comment": "test"
+        },
+        {
+            "id": "YYYY",
+            "rate": 3.4,
+            "category": 2,
+            "good_tag": [
+                2,
+                4
+            ],
+            "bad_tag": [
+                1,
+                3
+            ],
+            "comment": "test"
+        }
+    ]
+}
+```
+
+### Update
+request:
+```
+curl --location --request PUT 'http://127.0.0.1:5001/hikarinabe-741d2/asia-northeast1/cosmetic_log' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: wJ5C9dFcEMB5' \
+--data '{
+    "user_id": "7XFletCT3QvQqzWWt8sb",
+    "cosmetic_id": "YYYY",
+    "rate": 4.0
+}'
+
+```
+
+response:
+```
+{
+    "message": "Success to update log"
+}
+```
+
+check update to use GET:
+```
+{
+    "id": "YYYY",
+    "rate": 4.0,
+    "category": 2,
+    "good_tag": [
+        2,
+        4
+    ],
+    "bad_tag": [
+        1,
+        3
+    ],
+    "comment": "test"
+}
+```
+
+### Delete
+request:
+```
+curl --location --request DELETE 'http://127.0.0.1:5001/hikarinabe-741d2/asia-northeast1/cosmetic_log?user_id=7XFletCT3QvQqzWWt8sb&cosmetic_id=YYYY' \
+--header 'Authorization: wJ5C9dFcEMB5'
+```
+
+response:
+```
+{
+    "message": "CosmeticLog is deleted"
+}
+```

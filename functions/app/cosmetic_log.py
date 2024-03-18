@@ -46,12 +46,13 @@ def get_cosmetic_log(req: https_fn.Request):
     db = firestore.client()
     doc = db.collection(u'user').document(user_id).collection(u'cosmetic_logs').document(cosmetic_id).get()    
     if doc.exists == False:
-        return format_response(status=404, response="user not found")
+        return format_response(status=404, response="cosmetic not found")
     
     # TODO: cosmetic_dataから商品名も持ってくる
     
     log_dict = doc.to_dict()
     resp = {
+        'id': cosmetic_id,
         'rate': log_dict['rate'],
         'category': log_dict['category'],
         'good_tag': log_dict['good_tag'], 
@@ -73,6 +74,7 @@ def list_cosmetic_log(req: https_fn.Request):
     for d in log_docs:
         log_dict = d.to_dict()
         one_log = {
+            'id': d.id,
             'rate': log_dict['rate'],
             'category': log_dict['category'],
             'good_tag': log_dict['good_tag'], 
@@ -113,7 +115,7 @@ def update_cosmetic_log(req: https_fn.Request):
 
 def delete_cosmetic_log(req: https_fn.Request):
     user_id = req.args.to_dict().get('user_id')
-    cosmetic_log_id = req.args.to_dict().get('cosmetic_log_id')
+    cosmetic_log_id = req.args.to_dict().get('cosmetic_id')
 
     # ユーザーが存在するか確認
     db = firestore.client()

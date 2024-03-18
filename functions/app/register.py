@@ -36,7 +36,7 @@ def register_user(req: https_fn.Request):
         'update_time': datetime.now()
     })
     if result:
-        return format_response(status=201, response=user_id)
+        return https_fn.Response(status=201, response=json.dumps({'user_id': user_id}), content_type='application/json')
 
     return format_response(status=500, response="Failed to register user")
 
