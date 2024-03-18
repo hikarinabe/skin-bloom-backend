@@ -37,7 +37,6 @@ def register_user(req: https_fn.Request):
     })
     if result:
         return https_fn.Response(status=200, response=json.dumps(LoginResponse(user_id).__dict__), content_type='application/json')
-
     return format_response(status=500, response="Failed to register user")
 
 # NOTE: password check is done by client side

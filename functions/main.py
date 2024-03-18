@@ -3,6 +3,7 @@
 import json
 import os
 
+import app.cosmetic_log as cosmetic
 import app.register
 import app.user
 from firebase_admin import credentials, initialize_app
@@ -16,13 +17,6 @@ def check_api_key(req: https_fn.Request):
     if os.environ.get('SECRET_NAME') !=  req.headers.get("Authorization"):
         return False
     return True
-
-@https_fn.on_request(
-    cors=options.CorsOptions(cors_origins='*', cors_methods=['get']), secrets=["SECRET_NAME"]
-)
-def hello(_: https_fn.Request) -> https_fn.Response:
-    """ hello returns hello_world_from_cloud_function regardless of input """
-    return https_fn.Response(f'hello_world_from_cloud_function: {os.environ.get("SECRET_NAME")}')
 
 @https_fn.on_request(
     cors=options.CorsOptions(cors_origins='*', cors_methods=['get', 'post', 'put', 'delete']), secrets=["SECRET_NAME"]
@@ -60,4 +54,23 @@ def login(req: https_fn.Request) -> https_fn.Response:
         return https_fn.Response(status=401, response="Invalid API key")
     if req.method == 'POST':
        return app.register.check(req)
+    return https_fn.Response(status=405, response="Not support the request method")
+
+@https_fn.on_request(
+    cors=options.CorsOptions(cors_origins='*', cors_methods=['get', 'post', 'put', 'delete']), secrets=["SECRET_NAME"]
+)
+def cosmetic_log(req: https_fn.Request) -> https_fn.Response:
+    if check_api_key(req) == False:
+        return https_fn.Response(status=401, response="Invalid API key")             
+    if req.method == 'GET':
+        if req.path.endswith('list'):
+            return cosmetic.list_cosmetic_log(req)
+        else:
+            return cosmetic.get_cosmetic_log(req)
+    if req.method == 'POST':        
+        return cosmetic.add_cosmetic_log(req)
+    if req.method == 'PUT':
+        return cosmetic.update_cosmetic_log(req)
+    if req.method == 'DELETE':
+        return cosmetic.delete_cosmetic_log(req)
     return https_fn.Response(status=405, response="Not support the request method")
