@@ -1,8 +1,8 @@
 import json
-from datetime import datetime
 
 from firebase_admin import firestore
 from firebase_functions import https_fn
+from google.cloud.firestore_v1.base_query import FieldFilter, Or
 
 
 def format_response(status, response: str):
@@ -37,12 +37,25 @@ def search_cosmetic_info(req: https_fn.Request):
     doc_ref = db.collection(u'cosmetic_data')
 
     company = req_data['company'] if 'company' in req_data else None
-    if company != None:
-        doc_ref = doc_ref.where('company', '==', company)
+    if (company != None) and (type(company) != list):
+        if len(company) == 1:
+            doc_ref = doc_ref.where('company', '==', company[0])
+        elif len(company) > 1:
+            filter_lst = []
+            for c in company:
+                filter_lst.append(FieldFilter('company', '==', c))
+            doc_ref = doc_ref.where(filter=Or(filter_lst))
 
     category = req_data['category'] if 'category' in req_data else None
-    if category != None:
-        doc_ref = doc_ref.where('category', '==', category)
+    if (category != None) and (type(category) != list):
+        if len(category) == 1:
+            doc_ref = doc_ref.where('category', '==', category[0])
+        elif len(category) > 1:
+            filter_lst = []
+            for c in category:
+                filter_lst.append(FieldFilter('category', '==', c))
+            doc_ref = doc_ref.where(filter=Or(filter_lst))
+        
     
     doc = doc_ref.get()
     resp = []

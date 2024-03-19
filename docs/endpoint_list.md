@@ -329,11 +329,27 @@ Dataが空の時は全件が返ってくる
 ```
 curl --location 'http://127.0.0.1:8080/hikarinabe-741d2/asia-northeast1/cosmetic_info' \
 --header 'Content-Type: application/json' \
---header 'Authorization: wJ5C9dFcEMB5' \
+--header 'Authorization: API_KEY' \
 --data '{
-    "category": 5,
-    "company": 120
+    "category": [6],
+    "company": [120]
 }'
+
+
+# 全件
+curl --location 'http://127.0.0.1:8080/hikarinabe-741d2/asia-northeast1/cosmetic_info' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: API_KEY' \
+--data '{}'
+
+curl --location 'http://127.0.0.1:8080/hikarinabe-741d2/asia-northeast1/cosmetic_info' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: API_KEY' \
+--data '{
+    "category": [],
+    "company": []
+}'
+   
 ```
 
 response:
