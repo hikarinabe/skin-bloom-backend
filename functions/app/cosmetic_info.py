@@ -4,6 +4,7 @@ from firebase_admin import firestore
 from firebase_functions import https_fn
 from google.cloud.firestore_v1.base_query import FieldFilter, Or
 
+PAGE_SIZE=12
 
 def format_response(status, response: str):
     return https_fn.Response(status=status, response=json.dumps({'message': response}), content_type='application/json')
@@ -57,7 +58,7 @@ def search_cosmetic_info(req: https_fn.Request):
             doc_ref = doc_ref.where(filter=Or(filter_lst))
         
     
-    doc = doc_ref.get()
+    doc = doc_ref.limit(PAGE_SIZE).get()
     resp = []
     for d in doc:
         info_dict = d.to_dict()
