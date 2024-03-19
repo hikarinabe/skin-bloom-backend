@@ -14,7 +14,7 @@ def set_str_birthday(time_item: DatetimeWithNanoseconds):
               time_item.nanosecond // 1000)
         if type(date_time) == datetime:
             timestamp_str = datetime.fromtimestamp(time_item.timestamp(), ZoneInfo("Asia/Tokyo"))
-            return timestamp_str.strftime('%Y-%m-%d-%H:%M:%S')
+            return timestamp_str.strftime('%Y-%m-%dT%H:%M:%S')
         return time_item
 
 def set_timestamp_birthday(str_time):
@@ -121,7 +121,7 @@ def update_user(req: https_fn.Request):
     # 情報を更新
     account_name = validate_item('account_name', data, user_info)
     sex = validate_item('sex', data, user_info)
-    birthday = validate_item('birthday', data, user_info)
+    birthday = set_timestamp_birthday('birthday', data, user_info)
     user_ref.update({
         'account_name': account_name,
         'sex': sex, 
