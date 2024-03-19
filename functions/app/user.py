@@ -121,7 +121,11 @@ def update_user(req: https_fn.Request):
     # 情報を更新
     account_name = validate_item('account_name', data, user_info)
     sex = validate_item('sex', data, user_info)
-    birthday = set_timestamp_birthday('birthday', data, user_info)
+    if 'birthday' in data:
+        birthday = set_timestamp_birthday(data['birthday'])
+    else:
+        birthday = user_info.to_dict()['birthday']
+
     user_ref.update({
         'account_name': account_name,
         'sex': sex, 
