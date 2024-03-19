@@ -23,7 +23,7 @@ def get_cosmetic_info(req: https_fn.Request):
     resp = {
         'id': cosmetic_id,
         'ingredients': ingredients,
-        'name': info_dict['category'],
+        'name': info_dict['name'],
         'price': info_dict['price'], 
         'company': info_dict['company'],
         'category': info_dict['category'],
@@ -65,7 +65,7 @@ def search_cosmetic_info(req: https_fn.Request):
         resp.append({
             'id': d.id,
             'ingredients': ingredients,
-            'name': info_dict['category'],
+            'name': info_dict['name'],
             'price': info_dict['price'], 
             'company': info_dict['company'],
             'category': info_dict['category'],
