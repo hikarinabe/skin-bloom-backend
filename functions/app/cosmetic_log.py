@@ -66,7 +66,7 @@ def list_cosmetic_log(req: https_fn.Request):
     user_id = req.args.to_dict().get('user_id')
 
     db = firestore.client()
-    log_docs = db.collection(u'user').document(user_id).collection(u'cosmetic_logs').get()
+    log_docs = db.collection(u'user').document(user_id).collection(u'cosmetic_logs').limit(100).get()
 
     logs = []
     
