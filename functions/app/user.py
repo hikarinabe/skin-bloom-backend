@@ -50,7 +50,12 @@ def get_user(req: https_fn.Request):
     resp = {
         "account_name": user_dict['account_name'],
         "sex": user_dict['sex'],
-        "birthday": set_str_birthday(user_dict['birthday']),
+        'birthday': {
+            'year': user_dict['birthday'].year,
+            'month': user_dict['birthday'].month,
+            'day': user_dict['birthday'].day,
+
+        },
         "email": auth_doc.to_dict()["email"]
     } 
     
