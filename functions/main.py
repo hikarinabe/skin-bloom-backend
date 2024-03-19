@@ -1,8 +1,8 @@
 """ This is main program
     Deploy with `firebase deploy """
-import json
 import os
 
+import app.cosmetic_info
 import app.cosmetic_log as cosmetic
 import app.register
 import app.user
@@ -73,4 +73,16 @@ def cosmetic_log(req: https_fn.Request) -> https_fn.Response:
         return cosmetic.update_cosmetic_log(req)
     if req.method == 'DELETE':
         return cosmetic.delete_cosmetic_log(req)
+    return https_fn.Response(status=405, response="Not support the request method")
+
+@https_fn.on_request(
+    cors=options.CorsOptions(cors_origins='*', cors_methods=['get']), secrets=["SECRET_NAME"]
+)
+def cosmetic_info(req: https_fn.Request) -> https_fn.Response:
+    # if check_api_key(req) == False:
+    #     return https_fn.Response(status=401, response="Invalid API key")             
+    if req.method == 'POST':
+        return app.cosmetic_info.search_cosmetic_info(req)
+    if req.method == 'GET':
+        return app.cosmetic_info.get_cosmetic_info(req)
     return https_fn.Response(status=405, response="Not support the request method")
