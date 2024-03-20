@@ -51,7 +51,8 @@ def get_user(req: https_fn.Request):
         "account_name": user_dict['account_name'],
         "sex": user_dict['sex'],
         "birthday": set_str_birthday(user_dict['birthday']),
-        "email": auth_doc.to_dict()["email"]
+        "email": auth_doc.to_dict()["email"],
+        "nayami": user_dict['nayami']
     } 
     
     return https_fn.Response(status=200, response=json.dumps(resp), content_type='application/json')
