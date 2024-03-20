@@ -21,6 +21,9 @@ def get_cosmetic_info(req: https_fn.Request):
         
     info_dict = doc.to_dict()
     ingredients = info_dict['raw_ingredients'].split(',')
+    if info_dict['raw_ingredients'].find('、') != -1:
+        ingredients = info_dict['raw_ingredients'].split('、')
+
     resp = {
         'id': cosmetic_id,
         'ingredients': ingredients,
@@ -38,7 +41,7 @@ def search_cosmetic_info(req: https_fn.Request):
     doc_ref = db.collection(u'cosmetic_data')
 
     company = req_data['company'] if 'company' in req_data else None
-    if (company != None) and (type(company) != list):
+    if (company != None) and (type(company) == list):
         if len(company) == 1:
             doc_ref = doc_ref.where('company', '==', company[0])
         elif len(company) > 1:
@@ -48,7 +51,7 @@ def search_cosmetic_info(req: https_fn.Request):
             doc_ref = doc_ref.where(filter=Or(filter_lst))
 
     category = req_data['category'] if 'category' in req_data else None
-    if (category != None) and (type(category) != list):
+    if (category != None) and (type(category) == list):
         if len(category) == 1:
             doc_ref = doc_ref.where('category', '==', category[0])
         elif len(category) > 1:
@@ -63,6 +66,8 @@ def search_cosmetic_info(req: https_fn.Request):
     for d in doc:
         info_dict = d.to_dict()
         ingredients = info_dict['raw_ingredients'].split(',')
+        if info_dict['raw_ingredients'].find('、') != -1:
+            ingredients = info_dict['raw_ingredients'].split('、')
         resp.append({
             'id': d.id,
             'ingredients': ingredients,
