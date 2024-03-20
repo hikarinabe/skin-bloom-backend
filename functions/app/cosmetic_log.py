@@ -24,12 +24,18 @@ def add_cosmetic_log(req: https_fn.Request):
     cosmetic_id = data['cosmetic_id']
 
     db = firestore.client()
+    cosmetic_doc = db.collection(u'cosmetic_data').document(cosmetic_id).get()
+
+    if cosmetic_doc.exists == False:
+        return format_response(status=404, response="cosmetic not found")
+    
     result = db.collection(u'user').document(user_id).collection(u'cosmetic_logs').document(cosmetic_id).set({
         'rate': float(data['rate']) if 'comment' in data else -1,
         'category': int(data['category']) if 'comment' in data else 0,
         'good_tag': data['good_tag'] if 'good_tag' in data else [], 
         'bad_tag': data['bad_tag'] if 'bad_tag' in data else [], 
         'comment': data['comment']  if 'comment' in data else '',
+        'item_name': cosmetic_doc.to_dict()['name'],
         'create_time': datetime.now(),
         'update_time': datetime.now()
     })
@@ -47,12 +53,20 @@ def get_cosmetic_log(req: https_fn.Request):
     doc = db.collection(u'user').document(user_id).collection(u'cosmetic_logs').document(cosmetic_id).get()    
     if doc.exists == False:
         return format_response(status=404, response="cosmetic not found")
-    
-    # TODO: cosmetic_dataから商品名も持ってくる
-    
     log_dict = doc.to_dict()
+
+    if 'item_name' in log_dict == False:
+        cosmetic_doc = db.collection(u'cosmetic_data').document(cosmetic_id).get()    
+        if doc.exists == False:
+            return format_response(status=404, response="cosmetic not found")
+        cosmetic_name = cosmetic_doc.to_dict()['name']
+    else:
+        cosmetic_name = log_dict['name']
+
+    
     resp = {
         'id': cosmetic_id,
+        'item_name': cosmetic_name,
         'rate': log_dict['rate'],
         'category': log_dict['category'],
         'good_tag': log_dict['good_tag'], 
