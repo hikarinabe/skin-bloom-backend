@@ -101,6 +101,11 @@ response:
     "sex": "男",
     "birthday": "1900-01-01-09:00:00",
     "email": "example@email.com"
+    "nayami": [
+        1,
+        2,
+        3
+    ],
 }
 ```
 
