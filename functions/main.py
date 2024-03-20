@@ -76,11 +76,11 @@ def cosmetic_log(req: https_fn.Request) -> https_fn.Response:
     return https_fn.Response(status=405, response="Not support the request method")
 
 @https_fn.on_request(
-    cors=options.CorsOptions(cors_origins='*', cors_methods=['get']), secrets=["SECRET_NAME"]
+    cors=options.CorsOptions(cors_origins='*', cors_methods=['get', 'post']), secrets=["SECRET_NAME"]
 )
 def cosmetic_info(req: https_fn.Request) -> https_fn.Response:
-    # if check_api_key(req) == False:
-    #     return https_fn.Response(status=401, response="Invalid API key")             
+    if check_api_key(req) == False:
+        return https_fn.Response(status=401, response="Invalid API key")             
     if req.method == 'POST':
         return app.cosmetic_info.search_cosmetic_info(req)
     if req.method == 'GET':

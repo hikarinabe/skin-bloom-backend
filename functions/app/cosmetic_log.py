@@ -1,19 +1,20 @@
 import json
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from firebase_admin import firestore
 from firebase_functions import https_fn
+from google.api_core.datetime_helpers import DatetimeWithNanoseconds
 
-DEFAULT_BIRTHDAY = datetime(1900, 1, 1, 0, 0, 0)
-def set_timestamp_birthday(str_time):
-    birthday = DEFAULT_BIRTHDAY
-    if str_time != None:
-        try:
-            # 1900-1-1 0:0:0
-            birthday = datetime.strptime(str_time, "%Y-%m-%d %H:%M:%S")
-        except:
-            birthday = DEFAULT_BIRTHDAY
-    return birthday
+
+def set_str_day(time_item: DatetimeWithNanoseconds):
+        date_time = datetime(time_item.year, time_item.month, time_item.day,
+              time_item.hour, time_item.minute, time_item.second,
+              time_item.nanosecond // 1000)
+        if type(date_time) == datetime:
+            timestamp_str = datetime.fromtimestamp(time_item.timestamp(), ZoneInfo("Asia/Tokyo"))
+            return timestamp_str.strftime('%Y-%m-%dT%H:%M:%S')
+        return time_item
 
 def format_response(status, response: str):
     return https_fn.Response(status=status, response=json.dumps({'message': response}), content_type='application/json')
@@ -54,24 +55,16 @@ def get_cosmetic_log(req: https_fn.Request):
     if doc.exists == False:
         return format_response(status=404, response="cosmetic not found")
     log_dict = doc.to_dict()
-
-    if 'item_name' in log_dict == False:
-        cosmetic_doc = db.collection(u'cosmetic_data').document(cosmetic_id).get()    
-        if doc.exists == False:
-            return format_response(status=404, response="cosmetic not found")
-        cosmetic_name = cosmetic_doc.to_dict()['name']
-    else:
-        cosmetic_name = log_dict['name']
-
     
     resp = {
         'id': cosmetic_id,
-        'item_name': cosmetic_name,
+        'item_name': log_dict['item_name'],
         'rate': log_dict['rate'],
         'category': log_dict['category'],
         'good_tag': log_dict['good_tag'], 
         'bad_tag': log_dict['bad_tag'],
         'comment': log_dict['comment'],
+        'date': set_str_day(log_dict['update_time'])
     } 
     
     return https_fn.Response(status=200, response=json.dumps(resp), content_type='application/json')
@@ -84,16 +77,17 @@ def list_cosmetic_log(req: https_fn.Request):
 
     logs = []
     
-    # TODO: cosmetic_dataから商品名も持ってくる    
     for d in log_docs:
         log_dict = d.to_dict()
         one_log = {
             'id': d.id,
+            'item_name': log_dict['item_name'],
             'rate': log_dict['rate'],
             'category': log_dict['category'],
             'good_tag': log_dict['good_tag'], 
             'bad_tag': log_dict['bad_tag'],
             'comment': log_dict['comment'],
+            'date': set_str_day(log_dict['update_time'])
         } 
         logs.append(one_log)
     
