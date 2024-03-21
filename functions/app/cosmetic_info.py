@@ -9,6 +9,14 @@ DEFAULT_PAGE_SIZE=12
 def format_response(status, response: str):
     return https_fn.Response(status=status, response=json.dumps({'message': response}), content_type='application/json')
 
+def split_ingredient(ingredient: str):
+    if ingredient.find('、') != -1:
+        return ingredient.split('、')
+    elif ingredient.find('・') != -1:
+        return ingredient.split('・')
+    else:
+        return ingredient.split(',')
+
 def get_cosmetic_info(req: https_fn.Request):
     cosmetic_id = req.args.to_dict().get('cosmetic_id')
     if cosmetic_id == None:
@@ -20,9 +28,7 @@ def get_cosmetic_info(req: https_fn.Request):
         return format_response(status=404, response="cosmetic not found")
         
     info_dict = doc.to_dict()
-    ingredients = info_dict['raw_ingredients'].split(',')
-    if info_dict['raw_ingredients'].find('、') != -1:
-        ingredients = info_dict['raw_ingredients'].split('、')
+    ingredients = split_ingredient(info_dict['raw_ingredients'])
 
     resp = {
         'id': cosmetic_id,
@@ -69,9 +75,7 @@ def search_cosmetic_info(req: https_fn.Request):
     resp = []
     for d in doc:
         info_dict = d.to_dict()
-        ingredients = info_dict['raw_ingredients'].split(',')
-        if info_dict['raw_ingredients'].find('、') != -1:
-            ingredients = info_dict['raw_ingredients'].split('、')
+        ingredients = split_ingredient(info_dict['raw_ingredients'])
         resp.append({
             'id': d.id,
             'ingredients': ingredients,
