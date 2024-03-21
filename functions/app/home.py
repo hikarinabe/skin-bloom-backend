@@ -25,7 +25,7 @@ def get_mypage(req: https_fn.Request):
 
     # ユーザーが最近追加したアイテム
     db = firestore.client()
-    log_docs = db.collection(u'user').document(user_id).collection(u'cosmetic_logs').order_by('create_time', direction="descending").limit(3).get()
+    log_docs = db.collection(u'user').document(user_id).collection(u'cosmetic_logs').order_by('create_time', direction="DESCENDING").limit(3).get()
 
     logs = []
     for d in log_docs:
@@ -40,7 +40,7 @@ def get_mypage(req: https_fn.Request):
             'comment': log_dict['comment'],
             'date': set_str_day(log_dict['update_time'])
         } 
-    logs.append(one_log)
+        logs.append(one_log)
     
 
     ###### レコメンド関連
