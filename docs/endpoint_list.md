@@ -544,3 +544,129 @@ response:
     }
 ]
 ```
+
+## homeページの取得
+### home GET
+
+request:
+```
+curl --location 'https://asia-northeast1-hikarinabe-741d2.cloudfunctions.net//home?user_id=F5qsGFCI23UJP5JuK9XN' \
+--header 'Authorization: API_key'
+```
+response:
+```
+{
+    "list_cosmetics": [
+        {
+            "id": "2fCklSzErUKklOemOm62",
+            "item_name": "メラノCC 薬用しみ対策 保湿クリーム",
+            "rate": 4.0,
+            "category": 2,
+            "good_tag": [
+                1,
+                3
+            ],
+            "bad_tag": [
+                2,
+                4
+            ],
+            "comment": "すごい良かった！",
+            "date": "2024-03-20T19:41:51"
+        },
+        {
+            "id": "0rZ44IDAd3v0ca6SWeP3",
+            "item_name": "エカクレイスティックパック",
+            "rate": 2.0,
+            "category": 1,
+            "good_tag": [
+                1,
+                7
+            ],
+            "bad_tag": [
+                8,
+                4,
+                5
+            ],
+            "comment": "eeeee",
+            "date": "2024-03-20T19:41:12"
+        }
+    ],
+    "recommend_items": [
+        {
+            "id": "01DKCIR93KatptXG3sno",
+            "ingredients": [
+                "ジメチコン",
+                "グリセリン",
+                "PG",
+                "ミネラルオイル",
+                "（ジメチコン／ビニルジメチコン）クロスポリマー",
+                "（ラウリルジメチコン／ポリグリセリン-3）クロスポリマー",
+                "水",
+                "ハイドロキノン",
+                "トコフェロール",
+                "ツボクサエキス",
+                "アスコルビン酸",
+                "水添ポリイソブテン",
+                "香料"
+            ],
+            "name": "エピステーム HQレーザークリア",
+            "price": 7480,
+            "company": 130,
+            "category": 3
+        },
+        {
+            "id": "NwCyFwB7IOkRh3cCjS8T",
+            "ingredients": [
+                "グリセリン",
+                "ＤＰＧ",
+                "ＢＧ",
+                "ヒアルロン酸Ｎａ",
+                "トレハロース",
+                "油性エモリエント成分",
+                "ラウロイルグルタミン酸ジ（フィトステリル／オクチルドデシル）",
+                "トリエチルヘキサノイン",
+                "乳化剤",
+                "トリイソステアリン酸ＰＥＧ－５０水添ヒマシ油",
+                "セテス－２０",
+                "可溶化剤",
+                "ＰＥＧ－６０水添ヒマシ油",
+                "防腐剤",
+                "メチルパラベン",
+                "プロピルパラベン",
+                "ｐＨ調整剤",
+                "リンゴ酸Ｎａ",
+                "リンゴ酸",
+                "成分の酸化防止剤",
+                "トコフェロール",
+                "基剤",
+                "水"
+            ],
+            "name": "保湿化粧水 とてもしっとりタイプ",
+            "price": 770,
+            "company": 120,
+            "category": 1
+        },
+        {
+            "id": "EBvc3Z5oyXTofirGsNdF",
+            "ingredients": [
+                "ナイアシンアミド",
+                "グリチルリチン酸2K"
+            ],
+            "name": "肌ラボ 極潤 ハリパーフェクトゲル",
+            "price": 1309,
+            "company": 130,
+            "category": 7
+        }
+    ],
+    "good_ingredient": [
+        "ナイアシンアミド",
+        "ツボクサエキス",
+        "ヒアルロン酸Ｎａ"
+    ],
+    "bad_ingredient": [
+        "カルボキシビニルポリマー",
+        "トコフェロール (天然ビタミンE)",
+        "ヤシ油脂肪酸"
+    ]
+}
+```
