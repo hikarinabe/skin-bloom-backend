@@ -75,7 +75,7 @@ def search_cosmetic_info(req: https_fn.Request):
     
     keyword = req_data['keyword'] if 'keyword' in req_data else None
     if (keyword != None):
-        doc_ref = doc_ref.order_by("name",direction="ASCENDING").start_at(keyword).end_at(keyword + '\uf8ff')
+        doc_ref = doc_ref.order_by("name",direction="ASCENDING").start_at({"name": keyword})
     
     page_size = req_data['page_size'] if 'page_size' in req_data else DEFAULT_PAGE_SIZE
     doc = doc_ref.limit(page_size).get()
