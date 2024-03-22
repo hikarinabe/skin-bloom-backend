@@ -42,9 +42,6 @@ def get_mypage(req: https_fn.Request):
         } 
         logs.append(one_log)
 
-    
-    
-
     ###### レコメンド関連
     ## あとでAPI呼ぶ
     if len(logs) == 0:
@@ -220,7 +217,7 @@ recommend_2 = {
                 "ベヘニルアルコール"
             ],
             "name": "肌ラボ 極潤 ヒアルロン乳液",
-            "price": null,
+            "price": None,
             "company": 130,
             "category": 2,
             "match_rate": 85
@@ -269,4 +266,4 @@ recommend_2 = {
         "カルボキシビニルポリマー",
     ]     
      
-}   
+}
