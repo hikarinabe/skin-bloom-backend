@@ -27,21 +27,21 @@ def register_user(req: https_fn.Request):
     #validation
     db = firestore.client()
     validator = db.collection('auth').where("email", "==", email).get()
-    if len(validator)==0:
-        # hash password    
-        password = hashlib.sha256(req.form.get('password').encode()).hexdigest()
-
-        result = db.collection('auth').document(user_id).set({
-            'email': email, 
-            'password': password,
-            'create_time': datetime.now(),
-            'update_time': datetime.now()
-        })
-        if result:
-            return https_fn.Response(status=200, response=json.dumps(LoginResponse(user_id).__dict__), content_type='application/json')
-        return format_response(status=500, response="Failed to register user")
-    else:
+    if len(validator):
         return format_response(status=400,response="Bad Request")
+    
+    # hash password    
+    password = hashlib.sha256(req.form.get('password').encode()).hexdigest()
+    result = db.collection('auth').document(user_id).set({
+        'email': email, 
+        'password': password,
+        'create_time': datetime.now(),
+        'update_time': datetime.now()
+    })
+    if result:
+        return https_fn.Response(status=200, response=json.dumps(LoginResponse(user_id).__dict__), content_type='application/json')
+    return format_response(status=500, response="Failed to register user")
+    
 
 # NOTE: password check is done by client side
 def update_password(req: https_fn.Request):
