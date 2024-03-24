@@ -10,19 +10,23 @@ def format_response(status, response: str):
     return https_fn.Response(status=status, response=json.dumps({'message': response}), content_type='application/json')
 
 def split_ingredient(ingredient: str):
-    split_a  = ingredient.split('、')
-    split_b  = ingredient.split('・')
-    split_c  = ingredient.split(',')
+    sort_split = [] # [[num, [list]], [num, [list]], ...]
 
-    # a, b, cの中で最大のものを返す
-    if len(split_a) > len(split_c) and len(split_a) > len(split_b):
-        return split_a
+    split_a  = ingredient.split('、')
+    sort_split.append([len(split_a), split_a])
     
-    if len(split_b) > len(split_c) and len(split_b) > len(split_a):
-        return split_b
+    split_b  = ingredient.split('・')
+    sort_split.append([len(split_b), split_b])
     
-    if len(split_c) > len(split_b) and len(split_c) > len(split_a):
-        return split_c
+    split_c  = ingredient.split(',')
+    sort_split.append([len(split_c), split_c])
+    
+    split_d  = ingredient.split('，')
+    sort_split.append([len(split_d), split_d])
+
+    sort_split = sorted(sort_split, reverse=True)
+
+    return sort_split[0][1]
 
 def get_cosmetic_info(req: https_fn.Request):
     cosmetic_id = req.args.to_dict().get('cosmetic_id')
