@@ -31,7 +31,6 @@ def register_user(req: https_fn.Request):
         # hash password    
         password = hashlib.sha256(req.form.get('password').encode()).hexdigest()
 
-        # db = firestore.client()
         result = db.collection('auth').document(user_id).set({
             'email': email, 
             'password': password,
