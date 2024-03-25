@@ -26,8 +26,8 @@ def register_user(req: https_fn.Request):
     email = req.form.get('email')
     #validation
     db = firestore.client()
-    validator = not db.collection('auth').where("email", "==", email).get()
-    if not validator:
+    emails = db.collection('auth').where("email", "==", email).get()
+    if len(emails)>0:
         return format_response(status=400,response="Bad Request")
     
     # hash password    
