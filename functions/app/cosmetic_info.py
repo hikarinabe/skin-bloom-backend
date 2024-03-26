@@ -28,6 +28,16 @@ def split_ingredient(ingredient: str):
 
     return sort_split[0][1]
 
+def shorten_list(string_list, length=7, ellipsis="..."):
+    shortened_list = []
+    for string in string_list:
+        if len(string) > length:
+            shorted_string = string[:length] + ellipsis
+        else:
+            shorted_string = string
+        shortened_list.append(shorted_string)
+    return shortened_list
+
 def get_cosmetic_info(req: https_fn.Request):
     cosmetic_id = req.args.to_dict().get('cosmetic_id')
     if cosmetic_id == None:
@@ -89,7 +99,7 @@ def search_cosmetic_info(req: https_fn.Request):
         ingredients = split_ingredient(info_dict['raw_ingredients'])
         resp.append({
             'id': d.id,
-            'ingredients': ingredients,
+            'ingredients': shorten_list(ingredients),
             'name': info_dict['name'],
             'price': info_dict['price'], 
             'company': info_dict['company'],
