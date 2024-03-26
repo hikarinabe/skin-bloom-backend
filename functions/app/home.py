@@ -65,15 +65,17 @@ def get_mypage(req: https_fn.Request):
         recommend_items = recommend_2["recommend_items"]
         good_ingredient = recommend_2["good_ingredient"]
         bad_ingredient = recommend_2["bad_ingredient"]
- 
-      
-    
+
+    transform_items = []
+    for item in recommend_items:
+        item["ingredients"] = shorten_list(item["ingredients"])
+        transform_items.append(item)
     
     return https_fn.Response(status=200, response=json.dumps({
         'list_cosmetics': logs,
-        'recommend_items': recommend_items,
-        'good_ingredient': shorten_list(good_ingredient),
-        'bad_ingredient': shorten_list(bad_ingredient)
+        'recommend_items': transform_items,
+        'good_ingredient': good_ingredient,
+        'bad_ingredient': bad_ingredient,
     }), content_type='application/json')
 
 
