@@ -18,7 +18,16 @@ def set_str_day(time_item: DatetimeWithNanoseconds):
 
 def format_response(status, response: str):
     return https_fn.Response(status=status, response=json.dumps({'message': response}), content_type='application/json')
-
+    
+def shorten_list(string_list, length=7, ellipsis="..."):
+    shortened_list = []
+    for string in string_list:
+        if len(string) > length:
+            shorted_string = string[:length] + ellipsis
+        else:
+            shorted_string = string
+        shortened_list.append(shorted_string)
+    return shortened_list
 
 def get_mypage(req: https_fn.Request):
     user_id = req.args.to_dict().get('user_id')
@@ -63,8 +72,8 @@ def get_mypage(req: https_fn.Request):
     return https_fn.Response(status=200, response=json.dumps({
         'list_cosmetics': logs,
         'recommend_items': recommend_items,
-        'good_ingredient': good_ingredient,
-        'bad_ingredient': bad_ingredient
+        'good_ingredient': shorten_list(good_ingredient),
+        'bad_ingredient': shorten_list(bad_ingredient)
     }), content_type='application/json')
 
 
