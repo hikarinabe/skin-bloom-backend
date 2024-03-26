@@ -51,7 +51,7 @@ def get_cosmetic_log(req: https_fn.Request):
     cosmetic_id = req.args.to_dict().get('cosmetic_id')
 
     db = firestore.client()
-    doc = db.collection(u'user').document(user_id).collection(u'cosmetic_logs').document(cosmetic_id).get()    
+    doc = db.collection(u'user').document(user_id).collection(u'cosmetic_logs').document(cosmetic_id).order_by('create_time', direction="DESCENDING").get()    
     if doc.exists == False:
         return format_response(status=404, response="cosmetic not found")
     log_dict = doc.to_dict()
